@@ -19,3 +19,4 @@ gen
 /captures
 .externalNativeBuild
 /app/build
+.idea
