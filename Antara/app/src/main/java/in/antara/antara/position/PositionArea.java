@@ -1,4 +1,4 @@
-package in.antara.antara;
+package in.antara.antara.position;
 
 import android.util.Log;
 
@@ -41,8 +41,11 @@ public class PositionArea {
 
 
     public PositionArea(int widthPixels, int heightPixels) {
-        center = calcCenter(widthPixels, heightPixels);
-        boundingAreaRadius = calcBoundingAreaRadius(widthPixels, heightPixels);
+        int allotedWidth = widthPixels;
+        int allotedHeight = heightPixels / 2;
+
+        center = calcCenter(allotedWidth, allotedHeight);
+        boundingAreaRadius = calcBoundingAreaRadius(allotedWidth, allotedHeight);
         perPixelLen = calcPerPixelLen(boundingAreaRadius);
 
         setPillar(center, perPixelLen);
@@ -82,14 +85,14 @@ public class PositionArea {
     }
 
     private Point calcCenter(int widthPixels, int heightPixels) {
-        return new Point(widthPixels / 2, heightPixels / 2);
+        return new Point(widthPixels / 2, heightPixels / 2 - 25);
     }
 
     // Offset of 5 pixels
     private int calcBoundingAreaRadius(int widthPixels, int heightPixels) {
         boundingAreaRadius = (widthPixels / 2) - 5;
         if (heightPixels < widthPixels) {
-            boundingAreaRadius = (heightPixels / 2) - 5;
+            boundingAreaRadius = (heightPixels / 2) - 50;
         }
         Log.d(LOG_TAG, "Bounding circle radius: " + boundingAreaRadius);
         return boundingAreaRadius;

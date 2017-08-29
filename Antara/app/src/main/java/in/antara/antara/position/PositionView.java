@@ -1,4 +1,4 @@
-package in.antara.antara;
+package in.antara.antara.position;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,6 +17,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import in.antara.antara.R;
 import in.antara.antara.objects.Circle;
 import in.antara.antara.objects.Line;
 import in.antara.antara.objects.Rectangle;
