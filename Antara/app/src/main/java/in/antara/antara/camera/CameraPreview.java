@@ -88,6 +88,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public void takePicture() {
         camera.takePicture(null, null, pictureTakenCallback);
+        camera.stopPreview();
+        camera.startPreview();
     }
 
     private Timer timer = null;

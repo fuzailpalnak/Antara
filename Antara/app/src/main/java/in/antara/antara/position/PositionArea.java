@@ -136,11 +136,11 @@ public class PositionArea {
         String text = angle + " " + (char) 0x00B0 + ", " + dist + " cm";
         distText = new SlantedText(text, angle, distanceLine.center());
 
-        Log.d(LOG_TAG, "cm per pixel: " + perPixelLen);
-        Log.d(LOG_TAG, "distance in pixel: " + distInPixel);
-        Log.d(LOG_TAG, "center: " + center);
-        Log.d(LOG_TAG, "distance line: " + distanceLine);
-        Log.d(LOG_TAG, "position: " + position);
+//        Log.d(LOG_TAG, "cm per pixel: " + perPixelLen);
+//        Log.d(LOG_TAG, "distance in pixel: " + distInPixel);
+//        Log.d(LOG_TAG, "center: " + center);
+//        Log.d(LOG_TAG, "distance line: " + distanceLine);
+//        Log.d(LOG_TAG, "position: " + position);
     }
 
     private int cmToPixel(int cm, float perPixelLen) {

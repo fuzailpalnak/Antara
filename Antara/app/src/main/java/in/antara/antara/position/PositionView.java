@@ -95,7 +95,7 @@ public class PositionView extends SurfaceView implements SurfaceHolder.Callback 
 
         int newsIconX = widthPixels - 100;
         int newsIconY = heightPixels - 200;
-        Log.d(LOG_TAG, "News icon X: " + newsIconX + ", Y: " + newsIconY);
+//        Log.d(LOG_TAG, "News icon X: " + newsIconX + ", Y: " + newsIconY);
         canvas.drawBitmap(newsIcon, newsIconX, newsIconY, paint);
 
         Rectangle pillar = positionArea.getPillar();
