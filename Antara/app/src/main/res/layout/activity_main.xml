@@ -9,7 +9,7 @@
     <Button
         android:id="@+id/captureFront"
         android:layout_width="wrap_content"
-        android:layout_height="50dp"
+        android:layout_height="40dp"
         android:layout_centerInParent="true"
         android:onClick="takePicture"
         android:text="Click"/>
@@ -17,12 +17,12 @@
     <in.antara.antara.position.PositionView
         android:id="@+id/position_view"
         android:layout_width="match_parent"
-        android:layout_height="200dp" />
+        android:layout_height="230dp" />
 
     <FrameLayout
         android:id="@+id/camera_preview"
         android:layout_width="fill_parent"
-        android:layout_height="200dp" />
+        android:layout_height="230dp" />
 
 
 

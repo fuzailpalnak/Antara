@@ -1,6 +1,7 @@
 package in.antara.antara.camera;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -12,8 +13,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import in.antara.antara.AntaraApplication;
+import in.antara.antara.position.Position;
 
 /**
  * Created by udar on 8/29/2017.
@@ -45,8 +48,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private void init(Context context, Camera camera) {
         this.camera = camera;
         getHolder().addCallback(this);
+
+        LinkedBlockingQueue<Bitmap> picturesQ =
+                ((AntaraApplication) context.getApplicationContext()).getPicturesQ();
+        LinkedBlockingQueue<Position> positionsQ =
+                ((AntaraApplication) context.getApplicationContext()).getPositionsQ();
+
         pictureTakenCallback = new PictureTakenCallback(
-                ((AntaraApplication) context.getApplicationContext()).getPicturesQ(), context);
+                picturesQ, positionsQ, context, camera);
     }
 
     @Override
@@ -88,8 +97,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public void takePicture() {
         camera.takePicture(null, null, pictureTakenCallback);
-        camera.stopPreview();
-        camera.startPreview();
+//        camera.stopPreview();
+//        camera.startPreview();
     }
 
     private Timer timer = null;

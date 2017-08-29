@@ -16,7 +16,9 @@ import android.view.SurfaceView;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.LinkedBlockingQueue;
 
+import in.antara.antara.AntaraApplication;
 import in.antara.antara.R;
 import in.antara.antara.objects.Circle;
 import in.antara.antara.objects.Line;
@@ -34,6 +36,7 @@ public class PositionView extends SurfaceView implements SurfaceHolder.Callback 
     private PositionArea positionArea;
     private int widthPixels;
     private int heightPixels;
+    private LinkedBlockingQueue<Position> positionsQ;
 
     public PositionView(Context context) {
         super(context);
@@ -55,6 +58,9 @@ public class PositionView extends SurfaceView implements SurfaceHolder.Callback 
         setNewsIcon();
         setViewSize();
         positionArea = new PositionArea(widthPixels, heightPixels);
+
+        positionsQ =
+                ((AntaraApplication) getContext().getApplicationContext()).getPositionsQ();
     }
 
     private void setViewSize() {
@@ -86,8 +92,8 @@ public class PositionView extends SurfaceView implements SurfaceHolder.Callback 
     }
 
     private void renderStaticObjects(Canvas canvas) {
-        Log.d(LOG_TAG, "Render");
-        if(canvas == null) {
+        // Log.d(LOG_TAG, "Render");
+        if (canvas == null) {
             return;
         }
 
@@ -124,7 +130,7 @@ public class PositionView extends SurfaceView implements SurfaceHolder.Callback 
     }
 
     private void renderMovingObjects(Canvas canvas) {
-        if(canvas == null) {
+        if (canvas == null) {
             return;
         }
         // Render moving objects
@@ -171,11 +177,16 @@ public class PositionView extends SurfaceView implements SurfaceHolder.Callback 
 
             @Override
             public void run() {
-                positionArea.setPosition(randomDegrees(), randomDist());
+                // Log.d(LOG_TAG, "Available positions in Q " + positionsQ.size());
+                if (!positionsQ.isEmpty()) {
+                    Position position = positionsQ.remove();
+                    Log.d(LOG_TAG, "New position : " + position.toString());
+                    positionArea.setPosition(position.getAngle(), position.getLength());
+                }
                 draw();
             }
         };
-        timer.schedule(task, 500, 500);
+        timer.schedule(task, 1000, 1000);
     }
 
     public void stopTimer() {

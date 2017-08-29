@@ -12,11 +12,13 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import in.antara.antara.AngleUtility;
 import in.antara.antara.DistanceUtility;
 import in.antara.antara.SquareDetector;
+import in.antara.antara.position.Position;
 
 /**
  * Created by udar on 8/29/2017.
@@ -25,15 +27,27 @@ public class PictureTakenCallback implements Camera.PictureCallback {
     private static final String LOG_TAG = PictureTakenCallback.class.getSimpleName();
 
     private LinkedBlockingQueue<Bitmap> picturesQ;
-    private Context context;
+    private LinkedBlockingQueue<Position> positionsQ;
 
-    public PictureTakenCallback(LinkedBlockingQueue<Bitmap> pictures, Context context) {
-        this.picturesQ = pictures;
+    private Context context;
+    private Camera camera;
+
+    public PictureTakenCallback(LinkedBlockingQueue<Bitmap> picturesQ,
+                                LinkedBlockingQueue<Position> positionsQ,
+                                Context context,
+                                Camera camera) {
+        this.picturesQ = picturesQ;
+        this.positionsQ = positionsQ;
         this.context = context;
+        this.camera = camera;
     }
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
+        Log.d(LOG_TAG, "On Picture taken");
+        // TODO: Remove it
+        positionsQ.add(new Position(randomDist(), randomDegrees()));
+        // Log.d(LOG_TAG, "Available positions in Q " + positionsQ.size());
         try {
             Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
             // picturesQ.add(bmp);
@@ -83,10 +97,26 @@ public class PictureTakenCallback implements Camera.PictureCallback {
 
             AngleUtility angleObj = new AngleUtility();
             float angle = angleObj.getAngleFor1Square(matImg,topLeft,bottomLeft,topRight,bottomRight);
-            Log.d(LOG_TAG, "Calculated Angle : " + angle);
+            Log.d(LOG_TAG, "Calculated angle : " + angle);
 
+            // positionsQ.add(new Position(angle, distanceInCM.floatValue()));
         } catch (Exception e) {
             Log.e(LOG_TAG, e.getMessage());
         }
+        camera.stopPreview();
+        camera.startPreview();
+    }
+
+
+    private Random random = new Random();
+
+    private int randomDist() {
+        int rnd = random.nextInt();
+        return Math.abs(rnd % 500);
+    }
+
+    private int randomDegrees() {
+        int rnd = random.nextInt();
+        return Math.abs(rnd % 360);
     }
 }
