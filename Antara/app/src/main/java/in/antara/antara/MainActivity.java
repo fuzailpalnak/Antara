@@ -6,6 +6,7 @@ import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static Camera getCameraInstance(){
+    public Camera getCameraInstance(){
         Camera c = null;
         try {
             c = Camera.open(); // attempt to get a Camera instance
@@ -96,5 +97,10 @@ public class MainActivity extends AppCompatActivity {
             Log.e(LOG_TAG, e.getMessage());
         }
         return c; // returns null if camera is unavailable
+    }
+
+    public void takePicture(View view) {
+        Log.d(LOG_TAG, "Take picture clicked");
+        cameraPreview.takePicture();
     }
 }

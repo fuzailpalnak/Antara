@@ -46,7 +46,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         this.camera = camera;
         getHolder().addCallback(this);
         pictureTakenCallback = new PictureTakenCallback(
-                ((AntaraApplication) context.getApplicationContext()).getPicturesQ());
+                ((AntaraApplication) context.getApplicationContext()).getPicturesQ(), context);
     }
 
     @Override
@@ -63,10 +63,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             parameters.setPreviewSize(size.width, size.height);
             camera.setParameters(parameters);
 
+            parameters.getFocalLength();
+
             camera.setPreviewDisplay(holder);
             camera.startPreview();
 
-            startTimer();
+            // startTimer();
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error setting camera preview: " + e.getMessage());
         }
@@ -81,9 +83,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.d(LOG_TAG, "Surface Destroyed");
         camera.stopPreview();
-        stopTimer();
+        // stopTimer();
     }
 
+    public void takePicture() {
+        camera.takePicture(null, null, pictureTakenCallback);
+    }
 
     private Timer timer = null;
     private TimerTask task = null;
