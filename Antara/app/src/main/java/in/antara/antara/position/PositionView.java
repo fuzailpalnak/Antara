@@ -104,29 +104,15 @@ public class PositionView extends SurfaceView implements SurfaceHolder.Callback 
 //        Log.d(LOG_TAG, "News icon X: " + newsIconX + ", Y: " + newsIconY);
         canvas.drawBitmap(newsIcon, newsIconX, newsIconY, paint);
 
-        Rectangle pillar = positionArea.getPillar();
+        Rectangle room = positionArea.getRoom();
+        Log.d(LOG_TAG, "Room " + room);
         canvas.save();
-        canvas.rotate(pillar.getTilt(), pillar.getCenter().getX(), pillar.getCenter().getY());
+        canvas.rotate(room.getTilt(), room.getCenter().getX(), room.getCenter().getY());
         paint.setColor(Color.BLUE);
-        canvas.drawRect(pillar.left(), pillar.top(), pillar.right(), pillar.bottom(), paint);
-
-        Line diagonal = positionArea.getDiagonalOne();
-        paint.setColor(Color.CYAN);
-        canvas.drawLine(diagonal.getStart().getX(), diagonal.getStart().getY(),
-                diagonal.getEnd().getX(), diagonal.getEnd().getY(), paint);
-
-        diagonal = positionArea.getDiagonalTwo();
-        paint.setColor(Color.CYAN);
-        canvas.drawLine(diagonal.getStart().getX(), diagonal.getStart().getY(),
-                diagonal.getEnd().getX(), diagonal.getEnd().getY(), paint);
+        paint.setStyle(Paint.Style.STROKE);
+        canvas.drawRect(room.left(), room.top(), room.right(), room.bottom(), paint);
 
         canvas.restore();
-
-        Circle boundingArea = positionArea.getBoundingArea();
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.GREEN);
-        canvas.drawCircle(boundingArea.getCenter().getX(),
-                boundingArea.getCenter().getY(), boundingArea.getRadius(), paint);
     }
 
     private void renderMovingObjects(Canvas canvas) {

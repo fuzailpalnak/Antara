@@ -3,6 +3,7 @@ package in.antara.antara.camera;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.util.Log;
 import android.widget.Toast;
@@ -47,6 +48,13 @@ public class PictureTakenCallback implements Camera.PictureCallback {
         this.directionListener = directionListener;
     }
 
+    public static Bitmap RotateBitmap(Bitmap source, float angle)
+    {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+    }
+
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
         Log.d(LOG_TAG, "On Picture taken");
@@ -56,6 +64,7 @@ public class PictureTakenCallback implements Camera.PictureCallback {
         try {
             Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
             // picturesQ.add(bmp);
+            bmp = RotateBitmap(bmp,90.0f);
 
             Mat matImg = new Mat();
             Utils.bitmapToMat(bmp, matImg);
@@ -66,9 +75,22 @@ public class PictureTakenCallback implements Camera.PictureCallback {
             Mat hsvImg = detectorObj.convertRGBToHSV(matImg);
             Mat inrangeImg = detectorObj.inRangeThreshold(hsvImg);
 
+
+            Utils.matToBitmap(inrangeImg,bmp);
+
+
             Point topLeft, topRight, bottomLeft, bottomRight;
 
             List<Point> squareBbox = detectorObj.getBiggestSquare(inrangeImg);
+
+            //Validation
+            if(squareBbox == null){
+                Log.d(LOG_TAG, "Square not detected");
+                camera.stopPreview();
+                camera.startPreview();
+                return;
+            }
+
             Log.d(LOG_TAG, "Square box : " + squareBbox.size());
             topLeft = squareBbox.get(0);
             bottomLeft = squareBbox.get(1);
@@ -79,9 +101,8 @@ public class PictureTakenCallback implements Camera.PictureCallback {
             parameters.getFocalLength();
             Log.d(LOG_TAG, "Focal length : " + parameters.getFocalLength());
 
-            // Distance Code Example
             float focalLength = parameters.getFocalLength(); //mm
-            int imageHeight = matImg.cols(); //Pixel
+            int imageHeight = matImg.rows(); //Pixel
             Double detectedSquareHeight1 = 0.0; // Pixel
             Double detectedSquareHeight2 = 0.0; // Pixel
             Double distanceInMM = 0.0;

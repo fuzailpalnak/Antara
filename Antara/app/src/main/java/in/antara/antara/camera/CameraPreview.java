@@ -71,18 +71,41 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             for (Camera.Size size : rawSupportedSizes) {
                 Log.d(LOG_TAG, "Supported sizes :" + size.width + ", " + size.height);
             }
-            Camera.Size size = rawSupportedSizes.get(0);
-            Log.d(LOG_TAG, "Selected sizes :" + size.width + ", " + size.height);
-            parameters.setPreviewSize(size.width, size.height);
-            camera.setParameters(parameters);
+//            Camera.Size size = rawSupportedSizes.get(0);
+//            Log.d(LOG_TAG, "Selected sizes :" + size.width + ", " + size.height);
+//            parameters.setPreviewSize(size.width, size.height);
+//            Camera.Size c=camera.getParameters().getPreviewSize();
+//
+            for (Camera.Size size : parameters.getSupportedPictureSizes()) {
+                // 640 480
+                // 960 720
+                // 1024 768
+                // 1280 720
+                // 1600 1200
+                // 2560 1920
+                // 3264 2448
+                // 2048 1536
+                // 3264 1836
+                // 2048 1152
+                // 3264 2176
+                if (size.width==2340 & size.height ==4160) {
+                    parameters.setPreviewSize(size.width, size.height);
+                    parameters.setPictureSize(size.width, size.height);
+                    break;
+                }
+            }
 
-            parameters.getFocalLength();
+                camera.setParameters(parameters);
 
-            camera.setPreviewDisplay(holder);
-            camera.startPreview();
+                parameters.getFocalLength();
 
-            // startTimer();
-        } catch (IOException e) {
+                camera.setPreviewDisplay(holder);
+                camera.startPreview();
+
+                // startTimer();
+
+        }
+        catch (IOException e) {
             Log.e(LOG_TAG, "Error setting camera preview: " + e.getMessage());
         }
     }

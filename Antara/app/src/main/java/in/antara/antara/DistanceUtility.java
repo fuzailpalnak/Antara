@@ -47,7 +47,7 @@ public class DistanceUtility {
     public Double calculateDistanceBetween2Points(Double x1,Double y1,Double x2,Double y2){
         try{
             Double distance;
-            distance = Math.sqrt(Math.pow((x2-x1),2) + Math.pow((y2-y1),2));
+            distance = Math.sqrt(Math.pow((Math.abs(x2-x1)),2) + Math.pow((Math.abs(y2-y1)),2));
 
             return distance;
         }
