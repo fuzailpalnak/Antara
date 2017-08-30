@@ -46,7 +46,7 @@ public class PictureTakenCallback implements Camera.PictureCallback {
     public void onPictureTaken(byte[] data, Camera camera) {
         Log.d(LOG_TAG, "On Picture taken");
         // TODO: Remove it
-        positionsQ.add(new Position(randomDist(), randomDegrees()));
+        positionsQ.add(new Position(randomDegrees(), randomDist()));
         // Log.d(LOG_TAG, "Available positions in Q " + positionsQ.size());
         try {
             Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
@@ -117,6 +117,8 @@ public class PictureTakenCallback implements Camera.PictureCallback {
 
     private int randomDegrees() {
         int rnd = random.nextInt();
-        return Math.abs(rnd % 360);
+        int rnd_degree =  180 + Math.abs(rnd % 90);
+        Log.d(LOG_TAG, "Ramdom degrees: "+rnd_degree);
+        return rnd_degree;
     }
 }

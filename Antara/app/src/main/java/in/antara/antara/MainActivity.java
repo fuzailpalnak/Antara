@@ -1,12 +1,15 @@
 package in.antara.antara;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -15,6 +18,7 @@ import org.opencv.android.OpenCVLoader;
 import java.io.IOException;
 
 import in.antara.antara.camera.CameraPreview;
+import in.antara.antara.position.PositionView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
 
     private Camera camera;
     private CameraPreview cameraPreview;
+    private PositionView positionView;
+    private FrameLayout frameLayout;
+    private Button clickButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,10 +39,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (!OpenCVLoader.initDebug()) {
             Log.d(LOG_TAG, "OpenCV not loaded");
-            Toast.makeText(this, "OpenCV not loaded", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "OpenCV not loaded", Toast.LENGTH_SHORT).show();
         } else {
             Log.d(LOG_TAG, "OpenCV loaded");
-            Toast.makeText(this, "OpenCV loaded", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "OpenCV loaded", Toast.LENGTH_SHORT).show();
         }
 
         if(checkCameraHardware(getApplicationContext())) {
@@ -46,8 +53,13 @@ public class MainActivity extends AppCompatActivity {
                 exit();
             }
             cameraPreview = new CameraPreview(this, camera);
-            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-            preview.addView(cameraPreview);
+            frameLayout = (FrameLayout) findViewById(R.id.camera_preview);
+            frameLayout.addView(cameraPreview);
+
+            positionView = (PositionView) findViewById(R.id.position_view);
+            clickButton = (Button)  findViewById(R.id.captureFront);
+
+            updateHeights(clickButton, cameraPreview, positionView);
         } else {
             Log.e(LOG_TAG, "Failed to access camera");
             Toast.makeText(getApplicationContext(), "Failed to access camera", Toast.LENGTH_SHORT);
@@ -102,5 +114,19 @@ public class MainActivity extends AppCompatActivity {
     public void takePicture(View view) {
         Log.d(LOG_TAG, "Take picture clicked");
         cameraPreview.takePicture();
+    }
+
+    private void updateHeights(Button clickButton, CameraPreview cameraPreview,
+                               PositionView positionView) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        this.getWindowManager()
+                .getDefaultDisplay()
+                .getMetrics(displayMetrics);
+        int heightPixels = displayMetrics.heightPixels;
+        int widthPixels = displayMetrics.widthPixels;
+
+        clickButton.setHeight((int) (0.2 * heightPixels));
+        cameraPreview.getHolder().setFixedSize(widthPixels, (int)(0.4 * heightPixels));
+        positionView.getHolder().setFixedSize(widthPixels, (int)(0.4 * heightPixels));
     }
 }
