@@ -18,6 +18,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import in.antara.antara.AngleUtility;
 import in.antara.antara.DistanceUtility;
 import in.antara.antara.SquareDetector;
+import in.antara.antara.compass.DirectionListener;
 import in.antara.antara.position.Position;
 
 /**
@@ -32,21 +33,25 @@ public class PictureTakenCallback implements Camera.PictureCallback {
     private Context context;
     private Camera camera;
 
+    private DirectionListener directionListener;
+
     public PictureTakenCallback(LinkedBlockingQueue<Bitmap> picturesQ,
                                 LinkedBlockingQueue<Position> positionsQ,
                                 Context context,
-                                Camera camera) {
+                                Camera camera,
+                                DirectionListener directionListener) {
         this.picturesQ = picturesQ;
         this.positionsQ = positionsQ;
         this.context = context;
         this.camera = camera;
+        this.directionListener = directionListener;
     }
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
         Log.d(LOG_TAG, "On Picture taken");
         // TODO: Remove it
-        positionsQ.add(new Position(randomDist(), randomDegrees()));
+        // positionsQ.add(new Position(randomDist(), randomDegrees()));
         // Log.d(LOG_TAG, "Available positions in Q " + positionsQ.size());
         try {
             Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
@@ -64,7 +69,7 @@ public class PictureTakenCallback implements Camera.PictureCallback {
             Point topLeft, topRight, bottomLeft, bottomRight;
 
             List<Point> squareBbox = detectorObj.getBiggestSquare(inrangeImg);
-
+            Log.d(LOG_TAG, "Square box : " + squareBbox.size());
             topLeft = squareBbox.get(0);
             bottomLeft = squareBbox.get(1);
             bottomRight = squareBbox.get(2);
@@ -72,6 +77,7 @@ public class PictureTakenCallback implements Camera.PictureCallback {
 
             Camera.Parameters parameters = camera.getParameters();
             parameters.getFocalLength();
+            Log.d(LOG_TAG, "Focal length : " + parameters.getFocalLength());
 
             // Distance Code Example
             float focalLength = parameters.getFocalLength(); //mm
@@ -96,10 +102,11 @@ public class PictureTakenCallback implements Camera.PictureCallback {
             Log.d(LOG_TAG, "Calculated distance : " + distanceInCM);
 
             AngleUtility angleObj = new AngleUtility();
-            float angle = angleObj.getAngleFor1Square(matImg,topLeft,bottomLeft,topRight,bottomRight);
+            float angle = angleObj.getAngleFor1Square(matImg, topLeft, bottomLeft, topRight, bottomRight);
             Log.d(LOG_TAG, "Calculated angle : " + angle);
+            Log.d(LOG_TAG, "Calculated direction: " + directionListener.getDirectionDegree());
 
-            // positionsQ.add(new Position(angle, distanceInCM.floatValue()));
+            positionsQ.add(new Position(angle, distanceInCM.floatValue()));
         } catch (Exception e) {
             Log.e(LOG_TAG, e.getMessage());
         }

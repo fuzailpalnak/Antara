@@ -3,6 +3,7 @@ package in.antara.antara.camera;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
+import android.hardware.SensorEventListener;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -16,6 +17,7 @@ import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import in.antara.antara.AntaraApplication;
+import in.antara.antara.compass.DirectionListener;
 import in.antara.antara.position.Position;
 
 /**
@@ -29,23 +31,25 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Camera camera;
     private PictureTakenCallback pictureTakenCallback;
 
+    private DirectionListener directionListener;
 
-    public CameraPreview(Context context, Camera camera) {
+    public CameraPreview(Context context, Camera camera, DirectionListener directionListener) {
         super(context);
-        init(context, camera);
+        init(context, camera, directionListener);
     }
 
-    public CameraPreview(Context context, AttributeSet attrs, Camera camera) {
+    public CameraPreview(Context context, AttributeSet attrs, Camera camera, DirectionListener directionListener) {
         super(context, attrs);
-        init(context, camera);
+        init(context, camera, directionListener);
     }
 
-    public CameraPreview(Context context, AttributeSet attrs, int defStyleAttr, Camera camera) {
+    public CameraPreview(Context context, AttributeSet attrs, int defStyleAttr,
+                         Camera camera, DirectionListener directionListener) {
         super(context, attrs, defStyleAttr);
-        init(context, camera);
+        init(context, camera, directionListener);
     }
 
-    private void init(Context context, Camera camera) {
+    private void init(Context context, Camera camera, DirectionListener directionListener) {
         this.camera = camera;
         getHolder().addCallback(this);
 
@@ -55,7 +59,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 ((AntaraApplication) context.getApplicationContext()).getPositionsQ();
 
         pictureTakenCallback = new PictureTakenCallback(
-                picturesQ, positionsQ, context, camera);
+                picturesQ, positionsQ, context, camera, directionListener);
     }
 
     @Override

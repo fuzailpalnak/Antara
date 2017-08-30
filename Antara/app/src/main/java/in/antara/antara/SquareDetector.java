@@ -58,11 +58,13 @@ public class SquareDetector {
             Double largestArea = -1.0;
             MatOfPoint2f largestSquareContour = new MatOfPoint2f();
             for (int i=0; i<contours.size();i++) {
-
-                    Double area = Imgproc.contourArea(contours.get(i));
-                    if (area > largestArea){
-                        largestArea = area;
-                        contours.get(i).convertTo(largestSquareContour, CvType.CV_32FC2); ;
+                    if(contours.get(i).elemSize1()==4) {
+                        Double area = Imgproc.contourArea(contours.get(i));
+                        if (area > largestArea) {
+                            largestArea = area;
+                            contours.get(i).convertTo(largestSquareContour, CvType.CV_32FC2);
+                            ;
+                        }
                     }
             }
 

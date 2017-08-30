@@ -17,7 +17,7 @@ public class PositionArea {
     // in cm
     private static final int BOUNDING_DIST = 500;
     private static final int PILLAR_LEN = 100;
-    private static final int DEFAULT_POSITION_DIST = 400;
+    private static final int DEFAULT_POSITION_DIST = 0;
 
     // in degrees
     private static final int PILLAR_TILT = 20;
