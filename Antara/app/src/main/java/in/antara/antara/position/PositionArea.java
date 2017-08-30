@@ -17,11 +17,11 @@ public class PositionArea {
     // in cm
     private static final int ROOM_WIDTH = 500;
     private static final int ROOM_LEN = 600;
-    private static final int DEFAULT_POSITION_DIST = 400;
+    private static final int DEFAULT_POSITION_DIST = 0;
 
     // in degrees
     private static final int TILT = 0;
-    private static final int DEFAULT_POSITION_ANGLE = 240;
+    private static final int DEFAULT_POSITION_ANGLE = 0;
 
     // Static objects
     private Rectangle room;
@@ -84,7 +84,7 @@ public class PositionArea {
         distanceLine = new Line(tr, positionPt);
         position = new Circle(positionPt, 10);
 
-        String text = angle + " " + (char) 0x00B0 + ", " + dist + " cm";
+        String text = (angle - 180) + " " + (char) 0x00B0 + ", " + dist + " cm";
         distText = new SlantedText(text, angle, distanceLine.center());
     }
 
