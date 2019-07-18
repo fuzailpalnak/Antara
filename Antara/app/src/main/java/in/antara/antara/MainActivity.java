@@ -1,6 +1,5 @@
 package in.antara.antara;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,7 +19,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
@@ -33,7 +31,6 @@ import org.opencv.imgproc.Imgproc;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -50,12 +47,7 @@ public class MainActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1994;
     LinkedBlockingQueue<Position> positionsQ;
     private Camera camera;
-    private CameraPreview cameraPreview;
-    private PositionView positionView;
     private FrameLayout frameLayout;
-    private Button clickButton;
-
-    Uri mImageUri;
 
     String mCurrentPhotoPath;
 
@@ -72,27 +64,23 @@ public class MainActivity extends AppCompatActivity {
 
         if (!OpenCVLoader.initDebug()) {
             Log.d(LOG_TAG, "OpenCV not loaded");
-            // Toast.makeText(this, "OpenCV not loaded", Toast.LENGTH_SHORT).show();
         } else {
             Log.d(LOG_TAG, "OpenCV loaded");
-            // Toast.makeText(this, "OpenCV loaded", Toast.LENGTH_SHORT).show();
         }
 
         if (checkCameraHardware(getApplicationContext())) {
             camera = getCameraInstance();
             if (camera == null) {
                 Log.e(LOG_TAG, "Failed to create camera instance");
-                Toast.makeText(getApplicationContext(), "Failed to create camera instance", Toast.LENGTH_SHORT);
+                Toast.makeText(getApplicationContext(), "Failed to create camera instance",
+                        Toast.LENGTH_SHORT).show();
                 exit();
             }
             directionListener = new DirectionListener();
-            cameraPreview = new CameraPreview(this, camera, directionListener);
-//            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-//            preview.addView(cameraPreview);
+            CameraPreview cameraPreview = new CameraPreview(this, camera, directionListener);
 
-
-            positionView = (PositionView) findViewById(R.id.position_view);
-            clickButton = (Button) findViewById(R.id.captureFront);
+            PositionView positionView = findViewById(R.id.position_view);
+            Button clickButton = findViewById(R.id.captureFront);
 
             updateHeights(clickButton, cameraPreview, positionView);
 
@@ -100,7 +88,8 @@ public class MainActivity extends AppCompatActivity {
             registerListener();
         } else {
             Log.e(LOG_TAG, "Failed to access camera");
-            Toast.makeText(getApplicationContext(), "Failed to access camera", Toast.LENGTH_SHORT);
+            Toast.makeText(getApplicationContext(), "Failed to access camera",
+                    Toast.LENGTH_SHORT).show();
             exit();
         }
     }
@@ -154,14 +143,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void takePicture(View view) {
         Log.d(LOG_TAG, "Take picture clicked");
-//        cameraPreview.takePicture();
-
-//        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-//            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-//        }
-
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             // Create the File where the photo should go
@@ -292,16 +275,6 @@ public class MainActivity extends AppCompatActivity {
                 bottomRight = squareBbox.get(2);
                 topRight = squareBbox.get(3);
 
-//                Imgproc.circle(matImg, topLeft,10, new Scalar(255,0,0), -1);
-//                Utils.matToBitmap(matImg,bmp);
-//                Imgproc.circle(matImg, bottomLeft,10, new Scalar(0,255,0), -1);
-//                Utils.matToBitmap(matImg,bmp);
-//                Imgproc.circle(matImg, bottomRight,10, new Scalar(0,0,255), -1);
-//                Utils.matToBitmap(matImg,bmp);
-//                Imgproc.circle(matImg, topRight,10, new Scalar(100,100,100), -1);
-//                Utils.matToBitmap(matImg,bmp);
-
-
                 distanceSqaure1 = getDistance(bmp,matImg,topLeft,bottomLeft,bottomRight,topRight);
 
                 Log.d(LOG_TAG, "Calculated Square 1 Distance : " + distanceSqaure1);
@@ -314,15 +287,6 @@ public class MainActivity extends AppCompatActivity {
                 bottomRight = squareBbox.get(6);
                 topRight = squareBbox.get(7);
                 distanceSqaure2 = getDistance(bmp,matImg,topLeft,bottomLeft,bottomRight,topRight);
-
-//                Imgproc.circle(matImg, topLeft,10, new Scalar(255,0,0), -1);
-//                Utils.matToBitmap(matImg,bmp);
-//                Imgproc.circle(matImg, bottomLeft,10, new Scalar(0,255,0), -1);
-//                Utils.matToBitmap(matImg,bmp);
-//                Imgproc.circle(matImg, bottomRight,10, new Scalar(0,0,255), -1);
-//                Utils.matToBitmap(matImg,bmp);
-//                Imgproc.circle(matImg, topRight,10, new Scalar(100,100,100), -1);
-//                Utils.matToBitmap(matImg,bmp);
 
                 Log.d(LOG_TAG, "Calculated Square 2 Distance : " + distanceSqaure2);
 
@@ -343,28 +307,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
 
-
-
             positionsQ.add(new Position((float)finalAngle, (float)finalDistance));
-
-
-
-//            Log.d(LOG_TAG, "Square box : " + squareBbox.size());
-
-
-
-//            Imgproc.circle(matImg, topLeft,10, new Scalar(255,0,0), -1);
-//            Utils.matToBitmap(matImg,bmp);
-//            Imgproc.circle(matImg, bottomLeft,10, new Scalar(0,255,0), -1);
-//            Utils.matToBitmap(matImg,bmp);
-//            Imgproc.circle(matImg, bottomRight,10, new Scalar(0,0,255), -1);
-//            Utils.matToBitmap(matImg,bmp);
-//            Imgproc.circle(matImg, topRight,10, new Scalar(100,100,100), -1);
-//            Utils.matToBitmap(matImg,bmp);
-
-
-
-//            positionsQ.add(new Position(angle, distanceInCM.floatValue()));
 
         }
     }
