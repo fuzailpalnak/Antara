@@ -31,16 +31,13 @@ public class PositionArea {
     private Circle position;
     private SlantedText distText;
 
-    // Basic parameters
-    private Point center;
     private float perPixelLen;
 
 
-    public PositionArea(int widthPixels, int heightPixels) {
-        int allotedWidth = widthPixels;
+    PositionArea(int widthPixels, int heightPixels) {
         int allotedHeight = heightPixels / 2;
 
-        center = calcCenter(allotedWidth, allotedHeight);
+        Point center = calcCenter(widthPixels, allotedHeight);
         Log.d(LOG_TAG, "Center : " + center);
         perPixelLen = calcPerPixelLen(allotedHeight);
 

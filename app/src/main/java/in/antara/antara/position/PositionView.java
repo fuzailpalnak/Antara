@@ -155,7 +155,6 @@ public class PositionView extends SurfaceView implements SurfaceHolder.Callback 
 
     private Timer timer = null;
     private TimerTask task = null;
-    private Random random = new Random();
 
     public void startTimer() {
         timer = new Timer();
@@ -182,13 +181,4 @@ public class PositionView extends SurfaceView implements SurfaceHolder.Callback 
         }
     }
 
-    private int randomDist() {
-        int rnd = random.nextInt();
-        return Math.abs(rnd % 500);
-    }
-
-    private int randomDegrees() {
-        int rnd = random.nextInt();
-        return Math.abs(rnd % 360);
-    }
 }

@@ -1,17 +1,18 @@
 package in.antara.antara;
 
-/**
- * Created by vermap on 8/29/2017.
- */
 public class DistanceUtility {
 
     private static final float KNOWNSIDE = 500.0f ; //mm . 19.68 inch
     private static final float SENSORHEIGHT = 3.42f; //# in mm
+    private static final float FOCALLENGTH = 3.57f; //mm
 
-    public Double calculateDistanceInMM(float focalLength,int fullImageHeight,Double squareSideHeight){
+    // To get sensor height
+    // https://stackoverflow.com/questions/8104252/how-to-get-camera-sensor-size-in-android-device
+    // https://stackoverflow.com/questions/8921502/how-to-get-sensor-size-on-android/32012448
+
+    public Double calculateDistanceInMM(int fullImageHeight,Double squareSideHeight){
         try{
-            Double distanceInMM = (focalLength * KNOWNSIDE * fullImageHeight) / (squareSideHeight * SENSORHEIGHT);
-            return distanceInMM;
+            return (FOCALLENGTH * KNOWNSIDE * fullImageHeight) / (squareSideHeight * SENSORHEIGHT);
         }
 
         catch(Exception ex){
@@ -22,8 +23,7 @@ public class DistanceUtility {
 
     public Double convertDistanceFromMMToInches(Double distanceInMM){
         try{
-            Double distanceInInches = distanceInMM * 0.0393701f;
-            return distanceInInches;
+            return distanceInMM * 0.0393701f;
         }
 
         catch(Exception ex){
@@ -34,8 +34,7 @@ public class DistanceUtility {
 
     public Double convertDistanceFromInchesToCM(Double distanceInInches){
         try{
-            Double distanceInCM = distanceInInches * 2.54f;
-            return distanceInCM;
+            return distanceInInches * 2.54f;
         }
 
         catch(Exception ex){

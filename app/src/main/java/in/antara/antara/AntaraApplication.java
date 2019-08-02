@@ -7,10 +7,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import in.antara.antara.position.Position;
 
-/**
- *
- * Created by udar on 8/29/2017.
- */
 public class AntaraApplication extends Application {
 
     private LinkedBlockingQueue<Bitmap> picturesQ;

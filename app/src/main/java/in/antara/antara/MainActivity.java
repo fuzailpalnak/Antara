@@ -6,8 +6,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,15 +16,12 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,7 +32,6 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import in.antara.antara.camera.CameraPreview;
-import in.antara.antara.compass.DirectionListener;
 import in.antara.antara.position.Position;
 import in.antara.antara.position.PositionView;
 
@@ -47,11 +41,12 @@ public class MainActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1994;
     LinkedBlockingQueue<Position> positionsQ;
     private Camera camera;
-    private FrameLayout frameLayout;
 
     String mCurrentPhotoPath;
 
-    private DirectionListener directionListener;
+    private SquareDetector detectorObj = new SquareDetector();
+    private AntaraCalculation antaraCalculation = new AntaraCalculation();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,16 +71,13 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
                 exit();
             }
-            directionListener = new DirectionListener();
-            CameraPreview cameraPreview = new CameraPreview(this, camera, directionListener);
+            CameraPreview cameraPreview = new CameraPreview(this, camera);
 
             PositionView positionView = findViewById(R.id.position_view);
             Button clickButton = findViewById(R.id.captureFront);
 
             updateHeights(clickButton, cameraPreview, positionView);
 
-
-            registerListener();
         } else {
             Log.e(LOG_TAG, "Failed to access camera");
             Toast.makeText(getApplicationContext(), "Failed to access camera",
@@ -131,14 +123,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public Camera getCameraInstance() {
-        Camera c = null;
+        Camera camera = null;
         try {
-            c = Camera.open(); // attempt to get a Camera instance
-            c.setDisplayOrientation(90);
+            camera = Camera.open(); // attempt to get a Camera instance
+            camera.setDisplayOrientation(90);
         } catch (Exception e) {
             Log.e(LOG_TAG, e.getMessage());
         }
-        return c; // returns null if camera is unavailable
+        return camera; // returns null if camera is unavailable
     }
 
     public void takePicture(View view) {
@@ -192,166 +184,49 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-//            Bundle extras = data.getExtras();
-//            Bitmap bmp = (Bitmap) extras.get("data");
-//            mImageView.setImageBitmap(imageBitmap);
-
-            //Save Image
-//            Bitmap bmp = this.grabImage();
-
             Bitmap bmp = null;
+            Mat matImg = new Mat();
+
             try{
                 File f=new File(mCurrentPhotoPath);
                 bmp = BitmapFactory.decodeStream(new FileInputStream(f));
+
             }
            catch (IOException  ex){
+               Log.d(LOG_TAG, "IOException");
 
            }
 
-            if(bmp == null){
+            if (bmp != null) {
+                Utils.bitmapToMat(bmp, matImg);
+
+            } else {
                 return;
             }
 
-            Mat matImg = new Mat();
-            Utils.bitmapToMat(bmp, matImg);
 
-            DistanceUtility utilityObj = new DistanceUtility();
-            SquareDetector detectorObj = new SquareDetector();
-
-            Mat hsvImg = detectorObj.convertRGBToHSV(matImg);
-            Mat inrangeImg = detectorObj.inRangeThreshold(hsvImg);
-
-
-            Utils.matToBitmap(inrangeImg,bmp);
-
-
-            Point topLeft, topRight, bottomLeft, bottomRight;
-
-            List<Point> squareBbox = detectorObj.getBiggestSquare(inrangeImg);
+            Mat inRangeImg = antaraCalculation.detectAntaraObject(bmp, detectorObj);
+            List<Point> squareBbox = antaraCalculation.detectExtremerPoints(inRangeImg, detectorObj);
 
             //Validation
             if(squareBbox == null){
                 Log.d(LOG_TAG, "Square not detected");
+                Toast.makeText(this, "Antara Object Not Found" , Toast.LENGTH_LONG).show();
+
                 return;
             }
 
-            Double distanceSqaure1 = 0.0;
-            Double distanceSqaure2 = 0.0;
-            double[] angle = new double[2];
+//            List<Point> squareBbox = detectorObj.getBiggestSquare(inRangeImg);
+            double distance = antaraCalculation.positionEstimator(squareBbox, bmp);
+            Log.d(LOG_TAG, "Calculated Distance : " + distance);
+            Toast.makeText(this, "Distance : " + distance, Toast.LENGTH_LONG).show();
 
-            if(squareBbox.size()==4){
-                topLeft = squareBbox.get(0);
-                bottomLeft = squareBbox.get(1);
-                bottomRight = squareBbox.get(2);
-                topRight = squareBbox.get(3);
+            double angle = antaraCalculation.angleEstimator(squareBbox, bmp);
 
-                Imgproc.circle(matImg, topLeft,10, new Scalar(255,0,0), -1);
-                Utils.matToBitmap(matImg,bmp);
-                Imgproc.circle(matImg, bottomLeft,10, new Scalar(0,255,0), -1);
-                Utils.matToBitmap(matImg,bmp);
-                Imgproc.circle(matImg, bottomRight,10, new Scalar(0,0,255), -1);
-                Utils.matToBitmap(matImg,bmp);
-                Imgproc.circle(matImg, topRight,10, new Scalar(100,100,100), -1);
-                Utils.matToBitmap(matImg,bmp);
-
-
-                distanceSqaure1 = getDistance(bmp,matImg,topLeft,bottomLeft,bottomRight,topRight);
-
-                Log.d(LOG_TAG, "Calculated Square 1 Distance : " + distanceSqaure1);
-            }
-
-
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            //NOTE : 1 is left square,  2 is right square
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            positionsQ.add(new Position((float)angle, (float)distance));
 
 
 
-            if(squareBbox.size()==8){
-
-                topLeft = squareBbox.get(0);
-                bottomLeft = squareBbox.get(1);
-                bottomRight = squareBbox.get(2);
-                topRight = squareBbox.get(3);
-
-                distanceSqaure1 = getDistance(bmp,matImg,topLeft,bottomLeft,bottomRight,topRight);
-
-                Log.d(LOG_TAG, "Calculated Square 1 Distance : " + distanceSqaure1);
-
-
-
-                //For 2 square
-                topLeft = squareBbox.get(4);
-                bottomLeft = squareBbox.get(5);
-                bottomRight = squareBbox.get(6);
-                topRight = squareBbox.get(7);
-                distanceSqaure2 = getDistance(bmp,matImg,topLeft,bottomLeft,bottomRight,topRight);
-
-                Log.d(LOG_TAG, "Calculated Square 2 Distance : " + distanceSqaure2);
-
-                AngleUtility angleUtilityObj = new AngleUtility();
-                //Get Angle
-                angle = angleUtilityObj.getAngleFor2Squares(distanceSqaure1,distanceSqaure2);
-
-                Log.d(LOG_TAG,"Calculated Angle 1 :" + angle[0]);
-                Log.d(LOG_TAG,"Calculated Angle 2 :" + angle[1]);
-            }
-
-
-            double finalDistance = Math.max(distanceSqaure1,distanceSqaure2);
-            double finalAngle = angle[0] + 180; //Math.max(angle[0],angle[1]) + 180.0;
-
-            if(distanceSqaure2 == 0){
-                finalAngle = 270;
-            }
-
-
-            positionsQ.add(new Position((float)finalAngle, (float)finalDistance));
-
-        }
-    }
-
-
-    public Double getDistance(Bitmap bmp,Mat matImg,Point topLeft,Point bottomLeft,Point bottomRight,Point topRight){
-        try{
-
-            DistanceUtility utilityObj = new DistanceUtility();
-            Double[] result = new Double[3];
-            float focalLength = 3.57f; //mm
-            int imageHeight = bmp.getWidth(); //matImg.rows(); //Pixel
-            Double detectedSquareHeight1 = 0.0; // Pixel
-            Double detectedSquareHeight2 = 0.0; // Pixel
-            Double distanceInMM = 0.0;
-
-            detectedSquareHeight1 = utilityObj.calculateDistanceBetween2Points(topRight.x, topRight.y, bottomRight.x, bottomRight.y);
-            detectedSquareHeight2 = utilityObj.calculateDistanceBetween2Points(topLeft.x, topLeft.y, bottomLeft.x, bottomLeft.y);
-
-            if (detectedSquareHeight1 > detectedSquareHeight2) {
-                distanceInMM = utilityObj.calculateDistanceInMM(focalLength, imageHeight, detectedSquareHeight1);
-            } else {
-                distanceInMM = utilityObj.calculateDistanceInMM(focalLength, imageHeight, detectedSquareHeight2);
-            }
-
-            Double distanceInInches = utilityObj.convertDistanceFromMMToInches(distanceInMM);
-            Double distanceInCM = utilityObj.convertDistanceFromInchesToCM(distanceInInches);
-
-            Toast.makeText(this, "Distance : " + distanceInCM, Toast.LENGTH_LONG);
-            Log.d(LOG_TAG, "Calculated distance : " + distanceInCM);
-
-//            AngleUtility angleObj = new AngleUtility();
-//            float angle = angleObj.getAngleFor1Square(matImg, topLeft, bottomLeft, topRight, bottomRight);
-//            Log.d(LOG_TAG, "Calculated angle : " + angle);
-//            Log.d(LOG_TAG, "Calculated direction: " + directionListener.getDirectionDegree());
-
-//            result[0] = distanceInCM;
-//            result[] = distanceInCM;
-
-            return distanceInCM;
-        }
-        catch (Exception ex){
-            ex.printStackTrace();
-            return null;
         }
     }
 
@@ -370,21 +245,6 @@ public class MainActivity extends AppCompatActivity {
         positionView.getHolder().setFixedSize(widthPixels, (int) (0.45 * heightPixels));
     }
 
-    private void registerListener() {
-        SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-        if (sensor != null) {
-            sensorManager.registerListener(directionListener,
-                    sensor,
-                    SensorManager.SENSOR_DELAY_UI);
-        } else {
-            Log.e(LOG_TAG, "Orientation sensor not available");
-            Toast.makeText(this, "Orientation sensor not available", Toast.LENGTH_LONG);
-        }
-    }
 
-    private void unregisterListener() {
-        SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensorManager.unregisterListener(directionListener);
-    }
+
 }

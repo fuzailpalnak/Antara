@@ -1,6 +1,5 @@
 package in.antara.antara;
 
-import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -14,15 +13,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by vermap on 8/28/2017.
- */
 public class SquareDetector {
 
-    public static final Scalar lOWERRANGE = new Scalar(60,60,60);
-    public static final Scalar UPPERRANGE = new Scalar(120,255,255);
+    private static final Scalar lOWERRANGE = new Scalar(60,60,60);
+    private static final Scalar UPPERRANGE = new Scalar(120,255,255);
 
-    int largestContour = -1;
+    private int largestContour = -1;
 
     public Mat convertRGBToHSV(Mat rgbImage){
         try{
@@ -50,7 +46,7 @@ public class SquareDetector {
         }
     }
 
-    public List<Point> getBiggestContour( List<MatOfPoint> contours){
+    private List<Point> getBiggestContour(List<MatOfPoint> contours){
         try{
             Double largestArea = -1.0;
             MatOfPoint2f largestSquareContour = new MatOfPoint2f();
@@ -86,7 +82,7 @@ public class SquareDetector {
 
     public List<Point> getBiggestSquare(Mat img){
         try{
-            List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+            List<MatOfPoint> contours = new ArrayList<>();
             Mat hierarchy = new Mat();
 
             Imgproc.findContours(img,contours,hierarchy,Imgproc.RETR_TREE,Imgproc.CHAIN_APPROX_SIMPLE);
@@ -109,7 +105,7 @@ public class SquareDetector {
                     largestContour = -1;
 //                    largestSquareList.addAll(getBiggestContour(contours));
 
-                    List<Point> secondLargestSquareList = new ArrayList<>();
+                    List<Point> secondLargestSquareList;
                     secondLargestSquareList = getBiggestContour(contours);
                     contours.remove(largestContour);
                     largestContour = -1;
@@ -123,10 +119,11 @@ public class SquareDetector {
                     Double dist = disObj.calculateDistanceBetween2Points(topLeftBiggestContour.x,topLeftBiggestContour.y,topLeftSecondBiggestContour.x,topLeftSecondBiggestContour.y);
 
                     if(dist < 45){
-                        List<Point> thirdLargestSquareList = new ArrayList<>();
+                        List<Point> thirdLargestSquareList;
                         thirdLargestSquareList = getBiggestContour(contours);
                         contours.remove(largestContour);
                         largestContour = -1;
+                        assert thirdLargestSquareList != null;
                         largestSquareList.addAll(thirdLargestSquareList);
                     }
                    else{
@@ -150,8 +147,9 @@ public class SquareDetector {
 
             if (leftTop1.x > leftTop2.x){
 
-                List<Point> finalLargestSquareList = new ArrayList<Point>();
-                
+                List<Point> finalLargestSquareList;
+                finalLargestSquareList = new ArrayList<>();
+
                 Point tl = largestSquareList.get(4);
                 Point bl = largestSquareList.get(5);
                 Point br = largestSquareList.get(6);
@@ -185,7 +183,7 @@ public class SquareDetector {
 
 
 
-    public List<Point> _getTopLeftAndTopRight(List<Point> allPoints) {
+    private List<Point> _getTopLeftAndTopRight(List<Point> allPoints) {
         try {
 
             List<Double> xCoordinates = new ArrayList<>();
@@ -239,7 +237,7 @@ public class SquareDetector {
         }
     }
 
-    public List<Point> _getBottomLeftAndBottomRight(List<Point> allPoints) {
+    private List<Point> _getBottomLeftAndBottomRight(List<Point> allPoints) {
         try {
             List<Point> result = new ArrayList<>();
 
@@ -257,19 +255,22 @@ public class SquareDetector {
         }
     }
 
-    public List<Point> getCoordinatesFromBbox(List<Point> bbox) {
+    private List<Point> getCoordinatesFromBbox(List<Point> bbox) {
         try {
 
             List<Point> finalBbox = new ArrayList<>();
 
             List<Point> topLeftTopRight = _getTopLeftAndTopRight(bbox);
 
+            assert topLeftTopRight != null;
             bbox.remove(topLeftTopRight.get(0));
             bbox.remove(topLeftTopRight.get(1));
 
             List<Point> bottomLeftBottomRight = _getBottomLeftAndBottomRight(bbox);
 
             finalBbox.add(topLeftTopRight.get(0));
+
+            assert bottomLeftBottomRight != null;
             finalBbox.add(bottomLeftBottomRight.get(0));
             finalBbox.add(bottomLeftBottomRight.get(1));
             finalBbox.add(topLeftTopRight.get(1));

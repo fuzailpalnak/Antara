@@ -7,11 +7,6 @@ public class Position {
     private int angle;
     private int length;
 
-    public Position(int angle, int length) {
-        this.angle = angle;
-        this.length = length;
-    }
-
     public Position(float angle, float length) {
         this.angle = (int) angle;
         this.length = (int) length;
