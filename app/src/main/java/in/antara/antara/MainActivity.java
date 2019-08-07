@@ -1,5 +1,6 @@
 package in.antara.antara;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,6 +11,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -39,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     static final int REQUEST_IMAGE_CAPTURE = 1994;
+    private static final int MY_CAMERA_REQUEST_CODE = 100;
     LinkedBlockingQueue<Position> positionsQ;
     private Camera camera;
 
@@ -63,36 +68,11 @@ public class MainActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "OpenCV loaded");
         }
 
-        if (checkCameraHardware(getApplicationContext())) {
-            camera = getCameraInstance();
-            if (camera == null) {
-                Log.e(LOG_TAG, "Failed to create camera instance");
-                Toast.makeText(getApplicationContext(), "Failed to create camera instance",
-                        Toast.LENGTH_SHORT).show();
-                exit();
-            }
-            CameraPreview cameraPreview = new CameraPreview(this, camera);
+        ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
 
-            PositionView positionView = findViewById(R.id.position_view);
-            Button clickButton = findViewById(R.id.captureFront);
 
-            updateHeights(clickButton, cameraPreview, positionView);
-
-        } else {
-            Log.e(LOG_TAG, "Failed to access camera");
-            Toast.makeText(getApplicationContext(), "Failed to access camera",
-                    Toast.LENGTH_SHORT).show();
-            exit();
-        }
     }
 
-
-
-
-    private void exit() {
-        finish();
-        System.exit(0);
-    }
 
     @Override
     protected void onResume() {
@@ -112,6 +92,33 @@ public class MainActivity extends AppCompatActivity {
         // camera.release();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == MY_CAMERA_REQUEST_CODE) {
+
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                Toast.makeText(this, "camera permission granted", Toast.LENGTH_LONG).show();
+                if (checkCameraHardware(getApplicationContext())) {
+
+                    PositionView positionView = findViewById(R.id.position_view);
+                    Button clickButton = findViewById(R.id.captureFront);
+                    updateHeights(clickButton, positionView);
+
+                } else {
+                    Log.e(LOG_TAG, "Failed to access camera");
+                    Toast.makeText(getApplicationContext(), "Failed to access camera",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+            } else {
+                Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show();
+
+            }
+
+        }
+    }
     private boolean checkCameraHardware(Context context) {
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             Log.d(LOG_TAG, "Camera available on device");
@@ -122,16 +129,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public Camera getCameraInstance() {
-        Camera camera = null;
-        try {
-            camera = Camera.open(); // attempt to get a Camera instance
-            camera.setDisplayOrientation(90);
-        } catch (Exception e) {
-            Log.e(LOG_TAG, e.getMessage());
-        }
-        return camera; // returns null if camera is unavailable
-    }
 
     public void takePicture(View view) {
         Log.d(LOG_TAG, "Take picture clicked");
@@ -222,6 +219,8 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Distance : " + distance, Toast.LENGTH_LONG).show();
 
             double angle = antaraCalculation.angleEstimator(squareBbox, bmp);
+            Log.d(LOG_TAG, "Calculated Angle: " + angle);
+            Toast.makeText(this, "Angle : " + angle, Toast.LENGTH_LONG).show();
 
             positionsQ.add(new Position((float)angle, (float)distance));
 
@@ -231,8 +230,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void updateHeights(Button clickButton, CameraPreview cameraPreview,
-                               PositionView positionView) {
+    private void updateHeights(Button clickButton, PositionView positionView) {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         this.getWindowManager()
                 .getDefaultDisplay()
@@ -241,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
         int widthPixels = displayMetrics.widthPixels;
 
         clickButton.setHeight((int) (0.1 * heightPixels));
-        cameraPreview.getHolder().setFixedSize(widthPixels, (int) (0.45 * heightPixels));
+//        cameraPreview.getHolder().setFixedSize(widthPixels, (int) (0.45 * heightPixels));
         positionView.getHolder().setFixedSize(widthPixels, (int) (0.45 * heightPixels));
     }
 
